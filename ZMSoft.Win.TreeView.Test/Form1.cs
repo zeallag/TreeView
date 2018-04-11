@@ -23,7 +23,7 @@ namespace ZMSoft.Win.TreeView.Test
             treeView1.Space = 100;
             treeView1.NodeWidth = 75;
             treeView1.NodeHeigth = 35;
-            treeView1.NodeColor = Color.Gray;
+            treeView1.NodeColor = Color.FromArgb(0, 144, 255);
             treeView1.NodeForeColor = Color.Red;
             TreeNode node = treeView1.InitRootNode("Root", RootNodePosition.Left);//创建根节点
            
@@ -37,6 +37,11 @@ namespace ZMSoft.Win.TreeView.Test
             TreeNode C = new TreeNode();
             C.Text = "C";
 
+            TreeNode C1 = new TreeNode();
+            C1.Text = "C1";
+            TreeNode C2 = new TreeNode();
+            C2.Text = "C2";
+
             TreeNode B1 = new TreeNode();
             B1.Text = "B1";
            
@@ -46,7 +51,8 @@ namespace ZMSoft.Win.TreeView.Test
             node.AddNode(B);
             node.AddNode(C);
             B.AddNode(B1);
-           
+            C.AddNode(C1);
+            C.AddNode(C2);
             treeView1.BindNode();
           
         }
