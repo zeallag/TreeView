@@ -29,6 +29,7 @@ namespace ZMSoft.Win.TreeView
             InitializeComponent();
             this.DoubleBuffered = true;
             AutoScroll = true;
+            AllowDrop = true;
 
         }
         public void BindNode()
@@ -93,7 +94,7 @@ namespace ZMSoft.Win.TreeView
 
             return node;
         }
-
+ 
         private void AddNode(TreeNode node, int seq)
         {
             if (node.ParentNode != null)
@@ -104,39 +105,47 @@ namespace ZMSoft.Win.TreeView
                 node.Width = (int)(NodeWidth * zoom);
                 node.Height = (int)(NodeHeigth * zoom);
                 Point point = new Point();
-                int countBrother = node.ParentNode.GetNodes().Count;
+               // int countBrother = node.ParentNode.GetNodes().Count;
+                int countBrother = node.ParentNode.GetNodeWeight();
                 int mod = countBrother % 2;
                 int k = countBrother / 2;
+                int nodeWeight = node.GetNodeWeight();
                 switch (RootNodePosition)
                 {
                     case RootNodePosition.Left:
                         point.X = node.ParentNode.Location.X + zoomSpace + NodeWidth;
-                        if (mod == 0)
-                            point.Y = (int)(-k * NodeHeigth + (0.5 - k) * zoomSpace + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * seq);
-                        if (mod == 1)
-                            point.Y = (int)(0.5 - k * NodeHeigth + (-k) * zoomSpace + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * seq);
-                        break;
-                    case RootNodePosition.Top:
+                        //if (mod == 0)
+                        //    point.Y = (int)(-k * NodeHeigth + (0.5 - k) * zoomSpace + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * seq);
+                        //if (mod == 1)
+                        //    point.Y = (int)(0.5 - k * NodeHeigth + (-k) * zoomSpace + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * seq);
 
                         if (mod == 0)
-                            point.X = (int)(-k * NodeWidth + (0.5 - k) * zoomSpace + node.ParentNode.Location.X + (zoomSpace + NodeWidth) * seq);
+                            point.Y = (int)((0.5 - k) * (NodeHeigth + zoomSpace) + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * (seq - 1 + (1 + nodeWeight) * 10.0 / 20));
                         if (mod == 1)
-                            point.X = (int)(0.5 - k * NodeWidth + (-k) * zoomSpace + node.ParentNode.Location.X + (zoomSpace + NodeWidth) * seq);
+                            point.Y = (int)(-k * (NodeHeigth + zoomSpace) + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * (seq - 1 + (1 + nodeWeight) * 10.0 / 20));
+
+
+                        break;
+                    case RootNodePosition.Top:
+                        if (mod == 0)
+                            point.X = (int)((0.5 - k) * (NodeWidth + zoomSpace) + node.ParentNode.Location.X + (zoomSpace + NodeWidth) * (seq -1+ (1+nodeWeight)*10.0 / 20));
+                        if (mod == 1)
+                            point.X = (int)( - k* (NodeWidth+ zoomSpace) + node.ParentNode.Location.X +        (zoomSpace + NodeWidth) * (seq -1+ (1 + nodeWeight) * 10.0 / 20));
                         point.Y = node.ParentNode.Location.Y + zoomSpace + NodeHeigth;
                         break;
                     case RootNodePosition.Right:
                         point.X = node.ParentNode.Location.X - zoomSpace - NodeWidth;
                         if (mod == 0)
-                            point.Y = (int)(-k * NodeHeigth + (0.5 - k) * zoomSpace + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * seq);
+                            point.Y = (int)((0.5 - k) * (NodeHeigth + zoomSpace) + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * (seq - 1 + (1 + nodeWeight) * 10.0 / 20));
                         if (mod == 1)
-                            point.Y = (int)(0.5 - k * NodeHeigth + (-k) * zoomSpace + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * seq);
-                        break;
+                            point.Y = (int)(-k * (NodeHeigth + zoomSpace) + node.ParentNode.Location.Y + (zoomSpace + NodeHeigth) * (seq - 1 + (1 + nodeWeight) * 10.0 / 20));
+
                         break;
                     case RootNodePosition.Bottom:
                         if (mod == 0)
-                            point.X = (int)(-k * NodeWidth + (0.5 - k) * zoomSpace + node.ParentNode.Location.X + (zoomSpace + NodeWidth) * seq);
+                            point.X = (int)((0.5 - k) * (NodeWidth + zoomSpace) + node.ParentNode.Location.X + (zoomSpace + NodeWidth) * (seq - 1 + (1 + nodeWeight) * 10.0 / 20));
                         if (mod == 1)
-                            point.X = (int)(0.5 - k * NodeWidth + (-k) * zoomSpace + node.ParentNode.Location.X + (zoomSpace + NodeWidth) * seq);
+                            point.X = (int)(-k * (NodeWidth + zoomSpace) + node.ParentNode.Location.X + (zoomSpace + NodeWidth) * (seq - 1 + (1 + nodeWeight) * 10.0 / 20));
                         point.Y = node.ParentNode.Location.Y - zoomSpace - NodeHeigth;
                         break;
                 }
@@ -150,12 +159,14 @@ namespace ZMSoft.Win.TreeView
             int i = 0;
             foreach (TreeNode item in node.GetNodes())
             {
+               
                 AddNode(item, i);
-                i++;
+                i += item.GetNodeWeight();
             }
 
         }
-
+         
+    
         private void Node_MouseDown(object sender, MouseEventArgs e)
         {
            
@@ -185,16 +196,24 @@ namespace ZMSoft.Win.TreeView
             zoom = zoom * 0.9f;
             BindNode();
         }
+        private TreeNode DragNote;
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
             var hit = RootNode.HitTest(e.X, e.Y);
-            if (hit != null && hit.IsPlusButton)
+
+            if (hit != null )
             {
-                hit.Node.IsExpanded = !hit.Node.IsExpanded;
-                hit.Node.Invalidate();
-                this.Invalidate();
+                DragNote = hit.Node;
+                if (hit.IsPlusButton)
+                {
+                    hit.Node.IsExpanded = !hit.Node.IsExpanded;
+                    hit.Node.Invalidate();
+                    this.Invalidate();
+                }
             }
+           
         }
+        
     }
 }

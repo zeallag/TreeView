@@ -84,7 +84,16 @@ namespace ZMSoft.Win.TreeView
                 Nodes = new List<TreeNode>();
             return Nodes;
         }
-
+        public int GetNodeWeight()
+        {
+            var childs = GetNodes();
+            int nodeWidth =0;
+            foreach (var item in childs)
+            {
+                nodeWidth+= item.GetNodeWeight();
+            }
+            return Math.Max(nodeWidth, 1);
+        }
         private void button1_Click(object sender, EventArgs e)
         { 
             //IsExpanded = !IsExpanded;
@@ -265,7 +274,7 @@ namespace ZMSoft.Win.TreeView
             if (GetPlusButtonBounds().Contains(x, y))
                 return new HitNode(this, true);
 
-            if(Nodes.Count>0&& IsExpanded)
+            if (Nodes.Count > 0 && IsExpanded)
             {
                 foreach (var item in Nodes)
                 {
@@ -276,10 +285,30 @@ namespace ZMSoft.Win.TreeView
             }
             return null;
         }
-
+        private Nullable<Point> DragDownPoint = null;
         private void button1_MouseDown(object sender, MouseEventArgs e)
         {
-            this.OnMouseDown(e);
+            //DragDownPoint = null;
+            
+
+           DragDownPoint = new Point(e.X, e.Y);
+             
+        }
+
+        private void button1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (DragDownPoint.HasValue)
+                DragDownPoint = null;
+        }
+
+        private void button1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!DragDownPoint.HasValue)
+                return;
+            DoDragDrop(this, DragDropEffects.Move);
+            DragDownPoint = null;
+
+       
         }
     }
 }

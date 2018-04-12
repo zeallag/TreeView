@@ -91,5 +91,17 @@ namespace ZMSoft.Win.TreeView.Test
         {
             treeView1.ZoomOut();
         }
+
+        private void treeView1_DragEnter(object sender, DragEventArgs e)
+        {
+            
+                e.Effect = DragDropEffects.Move;
+            
+        }
+
+        private void treeView1_DragDrop(object sender, DragEventArgs e)
+        {
+            var obj =  e.Data.GetData(typeof(TreeNode));//将拖来的数据转化为数组存储 
+        }
     }
 }
