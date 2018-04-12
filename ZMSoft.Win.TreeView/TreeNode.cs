@@ -246,9 +246,14 @@ namespace ZMSoft.Win.TreeView
         }
 
         private void button1_SizeChanged(object sender, EventArgs e)
-        { 
-            Font font = new Font(button1.Font.FontFamily, (int)(button1.Height*0.38)); //具体效果自己调整下
+        {
+            if ((int)(button1.Height * 0.38) == 0)
+                return;
+
+            Font font = new Font(button1.Font.FontFamily, (int)(button1.Height * 0.38));  
             button1.Font = font;
+
+
         }
 
        
